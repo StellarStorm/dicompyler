@@ -10,15 +10,20 @@
 #
 # It's assumed that the reference (prescription) dose is in cGy.
 
+import hashlib
 import logging
-logger = logging.getLogger('dicompyler.dicomgui')
-import hashlib, os, threading
-import wx
-from wx.xrc import *
-from wx.lib.pubsub import pub
+import os
+import threading
+
 import numpy as np
+import wx
 from dicompylercore import dicomparser
+from wx.lib.pubsub import pub
+from wx.xrc import *
+
 from dicompyler import guiutil, util
+
+logger = logging.getLogger('dicompyler.dicomgui')
 
 
 def ImportDicom(parent):
