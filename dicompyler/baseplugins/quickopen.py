@@ -9,11 +9,15 @@
 #
 
 import logging
-logger = logging.getLogger('dicompyler.quickimport')
+
 import wx
-from wx.lib.pubsub import pub
 from dicompylercore import dicomparser
+from wx.lib.pubsub import pub
+
 from dicompyler import util
+
+logger = logging.getLogger('dicompyler.quickimport')
+
 
 def pluginProperties():
     """Properties of the plugin."""
@@ -30,8 +34,8 @@ def pluginProperties():
 
     return props
 
-class plugin:
 
+class plugin:
     def __init__(self, parent):
 
         # Initialize the import location via pubsub
@@ -42,9 +46,12 @@ class plugin:
 
         # Setup toolbar controls
         openbmp = wx.Bitmap(util.GetResourcePath('folder_image.png'))
-        self.tools = [{'label':"Open Quickly", 'bmp':openbmp,
-                            'shortHelp':"Open DICOM File Quickly...",
-                            'eventhandler':self.pluginMenu}]
+        self.tools = [{
+            'label': "Open Quickly",
+            'bmp': openbmp,
+            'shortHelp': "Open DICOM File Quickly...",
+            'eventhandler': self.pluginMenu
+        }]
 
     def OnImportPrefsChange(self, topic, msg):
         """When the import preferences change, update the values."""
@@ -58,7 +65,8 @@ class plugin:
         """Import DICOM data quickly."""
 
         dlg = wx.FileDialog(
-            self.parent, defaultDir = self.path,
+            self.parent,
+            defaultDir=self.path,
             wildcard="All Files (*.*)|*.*|DICOM File (*.dcm)|*.dcm",
             message="Choose a DICOM File")
 
@@ -74,11 +82,12 @@ class plugin:
                 logger.info("%s is not a valid DICOM file.", filename)
                 dlg = wx.MessageDialog(
                     self.parent, filename + " is not a valid DICOM file.",
-                    "Invalid DICOM File", wx.OK|wx.ICON_ERROR)
+                    "Invalid DICOM File", wx.OK | wx.ICON_ERROR)
                 dlg.ShowModal()
             # If this is really a DICOM file, place it in the appropriate bin
             else:
-                if (('ImageOrientationPatient' in dp.ds) and not (dp.ds.Modality in ['RTDOSE'])):
+                if (('ImageOrientationPatient' in dp.ds)
+                        and not (dp.ds.Modality in ['RTDOSE'])):
                     patient['images'] = []
                     patient['images'].append(dp.ds)
                 elif (dp.ds.Modality in ['RTSTRUCT']):
@@ -94,8 +103,12 @@ class plugin:
                 # if the 'import_location_setting' is "Remember Last Used"
                 if (self.import_location_setting == "Remember Last Used"):
                     pub.sendMessage('preferences.updated.value',
-                        msg={'general.dicom.import_location':dlg.GetDirectory()})
-                    pub.sendMessage('preferences.requested.values', msg='general.dicom')
+                                    msg={
+                                        'general.dicom.import_location':
+                                        dlg.GetDirectory()
+                                    })
+                    pub.sendMessage('preferences.requested.values',
+                                    msg='general.dicom')
         pub.sendMessage('patient.updated.raw_data', msg=patient)
         dlg.Destroy()
         return

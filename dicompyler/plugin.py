@@ -7,13 +7,18 @@
 #    See the file license.txt included with this distribution, also
 #    available at https://github.com/bastula/dicompyler/
 
+import imp
 import logging
-logger = logging.getLogger('dicompyler.plugin')
-import imp, os
+import os
+
 import wx
-from wx.xrc import *
 from wx.lib.pubsub import pub
+from wx.xrc import *
+
 from dicompyler import guiutil, util
+
+logger = logging.getLogger('dicompyler.plugin')
+
 
 def import_plugins(userpath=None):
     """Find and import available plugins."""
@@ -52,13 +57,16 @@ def import_plugins(userpath=None):
                     except ImportError:
                         logger.exception("%s could not be loaded", module)
                     else:
-                        plugins.append({'plugin': m,
-                                        'location': p['location']})
+                        plugins.append({
+                            'plugin': m,
+                            'location': p['location']
+                        })
                         logger.debug("%s loaded", module)
                     # If the module is a single file, close it
                     if not (description[2] == imp.PKG_DIRECTORY):
                         f.close()
     return plugins
+
 
 def PluginManager(parent, plugins, pluginsDisabled):
     """Prepare to show the plugin manager dialog."""
@@ -72,9 +80,9 @@ def PluginManager(parent, plugins, pluginsDisabled):
     # Show the dialog
     dlgPluginManager.ShowModal()
 
+
 class PluginManagerDialog(wx.Dialog):
     """Manage the available plugins."""
-
     def __init__(self):
         wx.Dialog.__init__(self)
 
@@ -104,15 +112,23 @@ class PluginManagerDialog(wx.Dialog):
         self.pluginsDisabled = set(pluginsDisabled)
 
         # Bind interface events to the proper methods
-#        wx.EVT_BUTTON(self, XRCID('btnDeletePlugin'), self.DeletePlugin)
+        #        wx.EVT_BUTTON(self, XRCID('btnDeletePlugin'), self.DeletePlugin)
         # wx.EVT_CHECKBOX(self, XRCID('checkEnabled'), self.OnEnablePlugin)
-        self.Bind(wx.EVT_CHECKBOX, self.OnEnablePlugin, id=XRCID('checkEnabled'))
+        self.Bind(wx.EVT_CHECKBOX,
+                  self.OnEnablePlugin,
+                  id=XRCID('checkEnabled'))
         # wx.EVT_TREE_ITEM_ACTIVATED(self, XRCID('tcPlugins'), self.OnEnablePlugin)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnEnablePlugin, id=XRCID('tcPlugins'))
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED,
+                  self.OnEnablePlugin,
+                  id=XRCID('tcPlugins'))
         # wx.EVT_TREE_SEL_CHANGED(self, XRCID('tcPlugins'), self.OnSelectTreeItem)
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelectTreeItem, id=XRCID('tcPlugins'))
+        self.Bind(wx.EVT_TREE_SEL_CHANGED,
+                  self.OnSelectTreeItem,
+                  id=XRCID('tcPlugins'))
         # wx.EVT_TREE_SEL_CHANGING(self, XRCID('tcPlugins'), self.OnSelectRootItem)
-        self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelectRootItem, id=XRCID('tcPlugins'))
+        self.Bind(wx.EVT_TREE_SEL_CHANGING,
+                  self.OnSelectRootItem,
+                  id=XRCID('tcPlugins'))
 
         # Modify the control and font size as needed
         font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
@@ -144,23 +160,17 @@ class PluginManagerDialog(wx.Dialog):
         iSize = (16, 16)
         iList = wx.ImageList(iSize[0], iSize[1])
         iList.Add(
-            wx.Bitmap(
-                util.GetResourcePath('bricks.png'),
-                wx.BITMAP_TYPE_PNG))
+            wx.Bitmap(util.GetResourcePath('bricks.png'), wx.BITMAP_TYPE_PNG))
         iList.Add(
-            wx.Bitmap(
-                util.GetResourcePath('plugin.png'),
-                wx.BITMAP_TYPE_PNG))
+            wx.Bitmap(util.GetResourcePath('plugin.png'), wx.BITMAP_TYPE_PNG))
         iList.Add(
-            wx.Bitmap(
-                util.GetResourcePath('plugin_disabled.png'),
-                wx.BITMAP_TYPE_PNG))
+            wx.Bitmap(util.GetResourcePath('plugin_disabled.png'),
+                      wx.BITMAP_TYPE_PNG))
         self.tcPlugins.AssignImageList(iList)
         self.root = self.tcPlugins.AddRoot('Plugins')
-        self.baseroot = self.tcPlugins.AppendItem(
-                        self.root, "Built-In Plugins", 0)
-        self.userroot = self.tcPlugins.AppendItem(
-                        self.root, "User Plugins", 0)
+        self.baseroot = self.tcPlugins.AppendItem(self.root,
+                                                  "Built-In Plugins", 0)
+        self.userroot = self.tcPlugins.AppendItem(self.root, "User Plugins", 0)
 
         font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         font.SetWeight(wx.FONTWEIGHT_BOLD)
@@ -192,14 +202,12 @@ class PluginManagerDialog(wx.Dialog):
             self.tcPlugins.SetItemData(i, n)
             self.tcPlugins.SelectItem(i)
         self.tcPlugins.ExpandAll()
-        self.Bind(
-            wx.EVT_TREE_ITEM_COLLAPSING,
-            self.OnExpandCollapseTree,
-            id=XRCID('tcPlugins'))
-        self.Bind(
-            wx.EVT_TREE_ITEM_EXPANDING,
-            self.OnExpandCollapseTree,
-            id=XRCID('tcPlugins'))
+        self.Bind(wx.EVT_TREE_ITEM_COLLAPSING,
+                  self.OnExpandCollapseTree,
+                  id=XRCID('tcPlugins'))
+        self.Bind(wx.EVT_TREE_ITEM_EXPANDING,
+                  self.OnExpandCollapseTree,
+                  id=XRCID('tcPlugins'))
 
     def OnSelectTreeItem(self, evt):
         """Update the interface when the selected item has changed."""
@@ -262,5 +270,6 @@ class PluginManagerDialog(wx.Dialog):
             self.pluginsDisabled.add(p.__name__)
             logger.debug("%s disabled", p.__name__)
 
-        pub.sendMessage('preferences.updated.value',
-                msg={'general.plugins.disabled_list': list(self.pluginsDisabled)})
+        pub.sendMessage(
+            'preferences.updated.value',
+            msg={'general.plugins.disabled_list': list(self.pluginsDisabled)})

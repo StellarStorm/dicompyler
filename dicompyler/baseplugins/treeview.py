@@ -9,18 +9,22 @@
 #
 
 import logging
-logger = logging.getLogger('dicompyler.treeview')
 import threading
-from six.moves import queue
+
 import wx
-from wx.xrc import XmlResource, XRCCTRL, XRCID
-from wx.lib.pubsub import pub
+from six.moves import queue
 from wx.dataview import TreeListCtrl as tlc
+from wx.lib.pubsub import pub
+from wx.xrc import XRCCTRL, XRCID, XmlResource
+
 from dicompyler import guiutil, util
+
+logger = logging.getLogger('dicompyler.treeview')
 try:
     import pydicom
 except ImportError:
     import dicom as pydicom
+
 
 def pluginProperties():
     """Properties of the plugin."""
@@ -37,6 +41,7 @@ def pluginProperties():
 
     return props
 
+
 def pluginLoader(parent):
     """Function to load the plugin."""
 
@@ -45,12 +50,12 @@ def pluginLoader(parent):
 
     panelTreeView = res.LoadPanel(parent, 'pluginTreeView')
     panelTreeView.Init(res)
-    
+
     return panelTreeView
-        
+
+
 class pluginTreeView(wx.Panel):
     """Plugin to display DICOM data in a tree view."""
-
     def __init__(self):
         wx.Panel.__init__(self)
 
@@ -77,7 +82,7 @@ class pluginTreeView(wx.Panel):
 
     def OnUpdatePatient(self, msg):
         """Update and load the patient data."""
-        
+
         self.choiceDICOM.Enable()
         self.choiceDICOM.Clear()
         self.choiceDICOM.Append("Select a DICOM dataset...")
@@ -86,7 +91,8 @@ class pluginTreeView(wx.Panel):
         # Iterate through the message and enumerate the DICOM datasets
         for k, v in msg.items():
             if isinstance(v, pydicom.dataset.FileDataset):
-                i = self.choiceDICOM.Append(v.SOPClassUID.name.split(' Storage')[0])
+                i = self.choiceDICOM.Append(
+                    v.SOPClassUID.name.split(' Storage')[0])
                 self.choiceDICOM.SetClientData(i, v)
             # Add the images to the choicebox
             if (k == 'images'):
@@ -104,28 +110,29 @@ class pluginTreeView(wx.Panel):
 
     def OnLoadTree(self, event):
         """Update and load the DICOM tree."""
-        
+
         choiceItem = event.GetInt()
         # Load the dataset chosen from the choice control
         if not (choiceItem == 0):
             dataset = self.choiceDICOM.GetClientData(choiceItem)
         else:
             return
-        
+
         self.tlcTreeView.DeleteAllItems()
-        self.root = self.tlcTreeView.AppendItem(self.tlcTreeView.GetRootItem(),dataset.SOPClassUID.name)
+        self.root = self.tlcTreeView.AppendItem(self.tlcTreeView.GetRootItem(),
+                                                dataset.SOPClassUID.name)
         self.tlcTreeView.Collapse(self.root)
 
         # Initialize the progress dialog
-        dlgProgress = guiutil.get_progress_dialog(
-            wx.GetApp().GetTopWindow(),
-            "Loading DICOM data...")
+        dlgProgress = guiutil.get_progress_dialog(wx.GetApp().GetTopWindow(),
+                                                  "Loading DICOM data...")
         # Set up the queue so that the thread knows which item was added
         self.queue = queue.Queue()
         # Initialize and start the recursion thread
-        self.t=threading.Thread(target=self.RecurseTreeThread,
-            args=(dataset, self.root, self.AddItemTree,
-            dlgProgress.OnUpdateProgress, len(dataset)))
+        self.t = threading.Thread(target=self.RecurseTreeThread,
+                                  args=(dataset, self.root, self.AddItemTree,
+                                        dlgProgress.OnUpdateProgress,
+                                        len(dataset)))
         self.t.start()
         # Show the progress dialog
         dlgProgress.ShowModal()
@@ -138,8 +145,9 @@ class pluginTreeView(wx.Panel):
         for i, data_element in enumerate(ds):
             # Check and update the progress of the recursion
             if (length > 0):
-                wx.CallAfter(progressFunc, i, length, 'Processing DICOM data...')
-                if (i == length-1):
+                wx.CallAfter(progressFunc, i, length,
+                             'Processing DICOM data...')
+                if (i == length - 1):
                     wx.CallAfter(progressFunc, i, len(ds), 'Done')
             # Add the data_element to the tree if not a sequence element
             if not (data_element.VR == 'SQ'):
@@ -151,14 +159,25 @@ class pluginTreeView(wx.Panel):
                 item = self.queue.get()
                 # Enumerate for each child element of the sequence
                 for i, ds in enumerate(data_element.value):
-                    sq_item_description = data_element.name.replace(" Sequence", "")
-                    sq_element_text = "%s %d" % (sq_item_description, i+1)
+                    sq_item_description = data_element.name.replace(
+                        " Sequence", "")
+                    sq_element_text = "%s %d" % (sq_item_description, i + 1)
                     # Add the child of the sequence to the tree
-                    wx.CallAfter(addItemFunc, data_element, item, sq_element_text, needQueue=True)
+                    wx.CallAfter(addItemFunc,
+                                 data_element,
+                                 item,
+                                 sq_element_text,
+                                 needQueue=True)
                     sq = self.queue.get()
-                    self.RecurseTreeThread(ds, sq, addItemFunc, progressFunc, 0)
+                    self.RecurseTreeThread(ds, sq, addItemFunc, progressFunc,
+                                           0)
 
-    def AddItemTree(self, data_element, parent, sq_element_text="", needQueue=False, cs=None):
+    def AddItemTree(self,
+                    data_element,
+                    parent,
+                    sq_element_text="",
+                    needQueue=False,
+                    cs=None):
         """Add a new item to the DICOM tree."""
 
         # Set the item if it is a child of a sequence element
@@ -171,7 +190,8 @@ class pluginTreeView(wx.Panel):
                 value = data_element.value
                 # Account for Pixel data
                 if (data_element.name == 'Pixel Data'):
-                    value = 'Array of ' + str(len(data_element.value)) + ' bytes'
+                    value = 'Array of ' + str(len(
+                        data_element.value)) + ' bytes'
                 # Account for Unknown VRs
                 elif ((data_element.VR == 'UN') and \
                     not (type(data_element.value) == str)):
@@ -181,7 +201,7 @@ class pluginTreeView(wx.Panel):
                     if not isinstance(data_element.value, str):
                         try:
                             pydicom.charset.decode(
-                                    pydicom.charset.decode(data_element, cs))
+                                pydicom.charset.decode(data_element, cs))
                         # Otherwise try decoding via ASCII encoding
                         except:
                             try:
@@ -190,8 +210,8 @@ class pluginTreeView(wx.Panel):
                                 logger.info(
                                     "Could not decode character set for %s.",
                                     data_element.name)
-                                value = str(
-                                    data_element.value, errors='replace')
+                                value = str(data_element.value,
+                                            errors='replace')
                         else:
                             value = data_element.value
                 self.tlcTreeView.SetItemText(item, 1, value)
@@ -202,9 +222,9 @@ class pluginTreeView(wx.Panel):
         if (needQueue):
             self.queue.put(item)
 
+
 class DICOMTree(tlc):
     """DICOM tree view based on TreeListControl."""
-    
     def __init__(self, *args, **kwargs):
         super(DICOMTree, self).__init__(*args, **kwargs)
         self.AppendColumn('Name')

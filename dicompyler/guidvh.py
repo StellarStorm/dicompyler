@@ -9,20 +9,30 @@
 #
 # It's assumed that the reference (prescription) dose is in cGy.
 
-from dicompyler import wxmpl
 import numpy as np
+
+from dicompyler import wxmpl
+
 
 class guiDVH:
     """Displays and updates the dose volume histogram using WxMpl."""
     def __init__(self, parent):
 
-        self.panelDVH = wxmpl.PlotPanel(parent, -1,
-                    size=(6, 4.50), dpi=68, crosshairs=False,
-                    autoscaleUnzoom=False)
+        self.panelDVH = wxmpl.PlotPanel(parent,
+                                        -1,
+                                        size=(6, 4.50),
+                                        dpi=68,
+                                        crosshairs=False,
+                                        autoscaleUnzoom=False)
         self.Replot()
 
-    def Replot(self, dvhlist=None, scalinglist=None, structures=None,
-               point=None, pointid=None, prefixes=None):
+    def Replot(self,
+               dvhlist=None,
+               scalinglist=None,
+               structures=None,
+               point=None,
+               pointid=None,
+               prefixes=None):
         """Redraws the plot."""
 
         fig = self.panelDVH.get_figure()
@@ -42,15 +52,16 @@ class guiDVH:
                         colorarray = np.array(structures[id]['color'],
                                               dtype=float)
                         # Plot white as black so it is visible on the plot
-                        if np.size(np.nonzero(colorarray/255 - 1)):
-                            color = colorarray/255
+                        if np.size(np.nonzero(colorarray / 255 - 1)):
+                            color = colorarray / 255
                         else:
                             color = np.zeros(3)
-                        prefix = prefixes[d] if not (prefixes == None) else None
+                        prefix = prefixes[d] if not (
+                            prefixes == None) else None
                         linestyle = '-' if not (d % 2) else '--'
                         maxlen = self.DrawDVH(dvh, structures[id], axes, color,
-                                              maxlen, scalinglist[d],
-                                              prefix, linestyle)
+                                              maxlen, scalinglist[d], prefix,
+                                              linestyle)
                         if (point and (pointid == id)):
                             self.DrawPoint(point, axes, color)
                         axes.legend(fancybox=True, shadow=True)
@@ -65,8 +76,15 @@ class guiDVH:
         # redraw the display
         self.panelDVH.draw()
 
-    def DrawDVH(self, dvh, structure, axes, color, maxlen,
-                scaling=None, prefix=None, linestyle='-'):
+    def DrawDVH(self,
+                dvh,
+                structure,
+                axes,
+                color,
+                maxlen,
+                scaling=None,
+                prefix=None,
+                linestyle='-'):
         """Draw the given structure on the plot."""
 
         # Determine the maximum DVH length for the x axis limit
@@ -78,11 +96,12 @@ class guiDVH:
         if not (scaling == None):
             dose = dose * scaling[structure['id']]
         name = prefix + ' ' + structure['name'] if prefix else structure['name']
-        axes.plot(dose, dvh,
-                label=name,
-                color=color,
-                linewidth=2,
-                linestyle=linestyle)
+        axes.plot(dose,
+                  dvh,
+                  label=name,
+                  color=color,
+                  linewidth=2,
+                  linestyle=linestyle)
 
         return maxlen
 

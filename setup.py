@@ -7,8 +7,9 @@
 #    See the file license.txt included with this distribution, also
 #    available at https://github.com/bastula/dicompyler/
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
+# yapf: disable
 requires = [
     'matplotlib>=1.3.0,<2.2',
     'numpy>=1.2.1',

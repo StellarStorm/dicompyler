@@ -6,7 +6,6 @@
 #
 # See the file "license.txt" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-
 """
 Embedding matplotlib in wxPython applications is straightforward, but the
 default plotting widget lacks the capabilities necessary for interactive use.
@@ -14,14 +13,12 @@ WxMpl (wxPython+matplotlib) is a library of components that provide these
 missing features in the form of a better matplolib FigureCanvas.
 """
 
-
-import wx
 import os.path
 import weakref
 
 import matplotlib
-matplotlib.use('WXAgg')
 import numpy as np
+import wx
 from matplotlib.axes._base import _process_plot_var_args
 from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
@@ -29,11 +26,15 @@ from matplotlib.figure import Figure
 from matplotlib.font_manager import FontProperties
 from matplotlib.transforms import Bbox
 
+matplotlib.use('WXAgg')
+
 __version__ = '1.3.1'
 
-__all__ = ['PlotPanel', 'PlotFrame', 'PlotApp', 'StripCharter', 'Channel',
+__all__ = [
+    'PlotPanel', 'PlotFrame', 'PlotApp', 'StripCharter', 'Channel',
     'FigurePrinter', 'PointEvent', 'EVT_POINT', 'SelectionEvent',
-    'EVT_SELECTION']
+    'EVT_SELECTION'
+]
 
 # If you are using wxGtk without libgnomeprint and want to use something other
 # than `lpr' to print you will have to specify that command here.
@@ -48,10 +49,10 @@ POSTSCRIPT_PRINTING_COMMAND = 'lpr'
 #       - axes_leave_event
 MATPLOTLIB_0_98_3 = '0.98.3' <= matplotlib.__version__
 
-
 #
 # Utility functions and classes
 #
+
 
 def invert_point(x, y, transform):
     """
@@ -228,6 +229,7 @@ class AxesLimits:
 # Director of the matplotlib canvas
 #
 
+
 class PlotPanelDirector:
     """
     Encapsulates all of the user-interaction logic required by the
@@ -239,8 +241,12 @@ class PlotPanelDirector:
     # TODO: add a programmatic interface to zooming and user interactions
     # TODO: full support for MPL events
 
-    def __init__(self, view, zoom=True, selection=True, rightClickUnzoom=True,
-      autoscaleUnzoom=True):
+    def __init__(self,
+                 view,
+                 zoom=True,
+                 selection=True,
+                 rightClickUnzoom=True,
+                 autoscaleUnzoom=True):
         """
         Create a new director for the C{PlotPanel} C{view}.  The keyword
         arguments C{zoom} and C{selection} have the same meanings as for
@@ -376,7 +382,7 @@ class PlotPanelDirector:
         view = self.view
         axes, xdata, ydata = find_axes(view, x, y)
         if (axes is not None and self.zoomEnabled and self.rightClickUnzoom
-        and self.limits.restore(axes)):
+                and self.limits.restore(axes)):
             view.crosshairs.clear()
             view.draw()
             view.crosshairs.set(x, y)
@@ -443,6 +449,7 @@ class PlotPanelDirector:
 #
 # Components used by the PlotPanel
 #
+
 
 class Painter:
     """
@@ -650,7 +657,7 @@ class RubberbandPainter(Painter):
         y2 = height - y2
         if x2 < x1: x1, x2 = x2, x1
         if y2 < y1: y1, y2 = y2, y1
-        return [int(z) for z in (x1, y1, x2-x1, y2-y1)]
+        return [int(z) for z in (x1, y1, x2 - x1, y2 - y1)]
 
     def drawValue(self, dc, value):
         """
@@ -715,10 +722,10 @@ class CursorChanger:
 #
 
 # PostScript resolutions for the various WX print qualities
-PS_DPI_HIGH_QUALITY   = 600
+PS_DPI_HIGH_QUALITY = 600
 PS_DPI_MEDIUM_QUALITY = 300
-PS_DPI_LOW_QUALITY    = 150
-PS_DPI_DRAFT_QUALITY  = 72
+PS_DPI_LOW_QUALITY = 150
+PS_DPI_DRAFT_QUALITY = 72
 
 
 def update_postscript_resolution(printData):
@@ -759,7 +766,6 @@ class FigurePrinter:
     Provides a simplified interface to the wxPython printing framework that's
     designed for printing matplotlib figures.
     """
-
     def __init__(self, view, printData=None):
         """
         Create a new C{FigurePrinter} associated with the wxPython widget
@@ -859,7 +865,7 @@ class FigurePrintout(wx.Printout):
         if aspectRatio is None:
             aspectRatio = self.ASPECT_RECTANGULAR
         elif (aspectRatio != self.ASPECT_RECTANGULAR
-        and aspectRatio != self.ASPECT_SQUARE):
+              and aspectRatio != self.ASPECT_SQUARE):
             raise ValueError('invalid aspect ratio')
         self.aspectRatio = aspectRatio
 
@@ -900,17 +906,17 @@ class FigurePrintout(wx.Printout):
 
         # PPI_P: Pixels Per Inch of the Printer
         wPPI_P, hPPI_P = [float(x) for x in self.GetPPIPrinter()]
-        PPI_P = (wPPI_P + hPPI_P)/2.0
+        PPI_P = (wPPI_P + hPPI_P) / 2.0
 
         # PPI: Pixels Per Inch of the DC
         if self.IsPreview():
             wPPI, hPPI = [float(x) for x in self.GetPPIScreen()]
         else:
             wPPI, hPPI = wPPI_P, hPPI_P
-        PPI = (wPPI + hPPI)/2.0
+        PPI = (wPPI + hPPI) / 2.0
 
         # Pg_Px: Size of the page (pixels)
-        wPg_Px,  hPg_Px  = [float(x) for x in self.GetPageSizePixels()]
+        wPg_Px, hPg_Px = [float(x) for x in self.GetPageSizePixels()]
 
         # Dev_Px: Size of the DC (pixels)
         wDev_Px, hDev_Px = [float(x) for x in self.GetDC().GetSize()]
@@ -924,8 +930,8 @@ class FigurePrintout(wx.Printout):
         hM = 0.75
 
         # Area: printable area within the margins (inches)
-        wArea = wPg - 2*wM
-        hArea = hPg - 2*hM
+        wArea = wPg - 2 * wM
+        hArea = hPg - 2 * hM
 
         # Fig: printing size of the figure
         # hFig is at a maximum when wFig == wArea
@@ -934,7 +940,7 @@ class FigurePrintout(wx.Printout):
         wFig = aspectRatio * hFig
 
         # scale factor = device size / page size (equals 1.0 for real printing)
-        S = ((wDev_Px/PPI)/wPg + (hDev_Px/PPI)/hPg)/2.0
+        S = ((wDev_Px / PPI) / wPg + (hDev_Px / PPI) / hPg) / 2.0
 
         # Fig_S: scaled printing size of the figure (inches)
         # M_S: scaled minimum margins (inches)
@@ -1076,20 +1082,29 @@ class SelectionEvent(wx.PyCommandEvent):
 
     def Clone(self):
         return SelectionEvent(self.GetId(), self.axes, self.x1, self.y1,
-            self.x2, self.y2)
+                              self.x2, self.y2)
 
 
 #
 # Matplotlib canvas in a wxPython window
 #
 
+
 class PlotPanel(FigureCanvasWxAgg):
     """
     A matplotlib canvas suitable for embedding in wxPython applications.
     """
-    def __init__(self, parent, id, size=(6.0, 3.70), dpi=96, cursor=True,
-     location=True, crosshairs=True, selection=True, zoom=True,
-     autoscaleUnzoom=True):
+    def __init__(self,
+                 parent,
+                 id,
+                 size=(6.0, 3.70),
+                 dpi=96,
+                 cursor=True,
+                 location=True,
+                 crosshairs=True,
+                 selection=True,
+                 zoom=True,
+                 autoscaleUnzoom=True):
         """
         Creates a new PlotPanel window that is the child of the wxPython window
         C{parent} with the wxPython identifier C{id}.
@@ -1111,9 +1126,9 @@ class PlotPanel(FigureCanvasWxAgg):
         self.location = LocationPainter(self, location)
         self.crosshairs = CrosshairPainter(self, crosshairs)
         self.rubberband = RubberbandPainter(self, selection)
-        rightClickUnzoom = True # for now this is default behavior
+        rightClickUnzoom = True  # for now this is default behavior
         self.director = PlotPanelDirector(self, zoom, selection,
-            rightClickUnzoom, autoscaleUnzoom)
+                                          rightClickUnzoom, autoscaleUnzoom)
 
         self.figure.set_edgecolor('black')
         self.figure.set_facecolor('white')
@@ -1122,7 +1137,8 @@ class PlotPanel(FigureCanvasWxAgg):
         # find the toplevel parent window and register an activation event
         # handler that is keyed to the id of this PlotPanel
         topwin = toplevel_parent_of_window(self)
-        topwin.Connect(self.GetId(), wx.ID_ANY, wx.wxEVT_ACTIVATE, self.OnActivate)
+        topwin.Connect(self.GetId(), wx.ID_ANY, wx.wxEVT_ACTIVATE,
+                       self.OnActivate)
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         # self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
@@ -1235,7 +1251,7 @@ class PlotPanel(FigureCanvasWxAgg):
         # don't redraw if the left mouse button is down and avoid
         # wxPyDeadObject errors
         if (not self.director.canDraw()
-        or  not isinstance(self, FigureCanvasWxAgg)):
+                or not isinstance(self, FigureCanvasWxAgg)):
             return
 
         if MATPLOTLIB_0_98_3:
@@ -1328,6 +1344,7 @@ class PlotPanel(FigureCanvasWxAgg):
 # Matplotlib canvas in a top-level wxPython window
 #
 
+
 class PlotFrame(wx.Frame):
     """
     A matplotlib canvas embedded in a wxPython top-level window.
@@ -1337,13 +1354,23 @@ class PlotFrame(wx.Frame):
     """
 
     ABOUT_TITLE = 'About wxmpl.PlotFrame'
-    ABOUT_MESSAGE = ('wxmpl.PlotFrame %s\n' %  __version__
-        + 'Written by Ken McIvor <mcivor@iit.edu>\n'
-        + 'Copyright 2005-2009 Illinois Institute of Technology')
+    ABOUT_MESSAGE = ('wxmpl.PlotFrame %s\n' % __version__ +
+                     'Written by Ken McIvor <mcivor@iit.edu>\n' +
+                     'Copyright 2005-2009 Illinois Institute of Technology')
 
-    def __init__(self, parent, id, title, size=(6.0, 3.7), dpi=96, cursor=True,
-     location=True, crosshairs=True, selection=True, zoom=True,
-     autoscaleUnzoom=True, **kwds):
+    def __init__(self,
+                 parent,
+                 id,
+                 title,
+                 size=(6.0, 3.7),
+                 dpi=96,
+                 cursor=True,
+                 location=True,
+                 crosshairs=True,
+                 selection=True,
+                 zoom=True,
+                 autoscaleUnzoom=True,
+                 **kwds):
         """
         Creates a new PlotFrame top-level window that is the child of the
         wxPython window C{parent} with the wxPython identifier C{id} and the
@@ -1357,7 +1384,7 @@ class PlotFrame(wx.Frame):
         """
         wx.Frame.__init__(self, parent, id, title, **kwds)
         self.panel = PlotPanel(self, -1, size, dpi, cursor, location,
-            crosshairs, selection, zoom)
+                               crosshairs, selection, zoom)
 
         pData = wx.PrintData()
         pData.SetPaperId(wx.PAPER_LETTER)
@@ -1367,7 +1394,7 @@ class PlotFrame(wx.Frame):
 
         self.create_menus()
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.panel, 1, wx.ALL|wx.EXPAND, 5)
+        sizer.Add(self.panel, 1, wx.ALL | wx.EXPAND, 5)
         self.SetSizer(sizer)
         self.Fit()
 
@@ -1377,7 +1404,7 @@ class PlotFrame(wx.Frame):
 
         id = wx.NewId()
         menu.Append(id, '&Save As...\tCtrl+S',
-            'Save a copy of the current plot')
+                    'Save a copy of the current plot')
         wx.EVT_MENU(self, id, self.OnMenuFileSave)
 
         menu.AppendSeparator()
@@ -1385,12 +1412,12 @@ class PlotFrame(wx.Frame):
         if wx.Platform != '__WXMAC__':
             id = wx.NewId()
             menu.Append(id, 'Page Set&up...',
-                'Set the size and margins of the printed figure')
+                        'Set the size and margins of the printed figure')
             wx.EVT_MENU(self, id, self.OnMenuFilePageSetup)
 
             id = wx.NewId()
             menu.Append(id, 'Print Pre&view...',
-                'Preview the print version of the current plot')
+                        'Preview the print version of the current plot')
             wx.EVT_MENU(self, id, self.OnMenuFilePrintPreview)
 
         id = wx.NewId()
@@ -1401,7 +1428,7 @@ class PlotFrame(wx.Frame):
 
         id = wx.NewId()
         menu.Append(id, '&Close Window\tCtrl+W',
-            'Close the current plot window')
+                    'Close the current plot window')
         wx.EVT_MENU(self, id, self.OnMenuFileClose)
 
         mainMenu.Append(menu, '&File')
@@ -1418,10 +1445,14 @@ class PlotFrame(wx.Frame):
         """
         Handles File->Save menu events.
         """
-        fileName = wx.FileSelector('Save Plot', default_extension='png',
-            wildcard=('Portable Network Graphics (*.png)|*.png|'
-                + 'Encapsulated Postscript (*.eps)|*.eps|All files (*.*)|*.*'),
-            parent=self, flags=wx.SAVE|wx.OVERWRITE_PROMPT)
+        fileName = wx.FileSelector(
+            'Save Plot',
+            default_extension='png',
+            wildcard=(
+                'Portable Network Graphics (*.png)|*.png|' +
+                'Encapsulated Postscript (*.eps)|*.eps|All files (*.*)|*.*'),
+            parent=self,
+            flags=wx.SAVE | wx.OVERWRITE_PROMPT)
 
         if not fileName:
             return
@@ -1433,8 +1464,10 @@ class PlotFrame(wx.Frame):
             error_message = (
                 'Only the PNG and EPS image formats are supported.\n'
                 'A file extension of `png\' or `eps\' must be used.')
-            wx.MessageBox(error_message, 'Error - plotit',
-                parent=self, style=wx.OK|wx.ICON_ERROR)
+            wx.MessageBox(error_message,
+                          'Error - plotit',
+                          parent=self,
+                          style=wx.OK | wx.ICON_ERROR)
             return
 
         try:
@@ -1445,8 +1478,10 @@ class PlotFrame(wx.Frame):
             else:
                 err = e
 
-            wx.MessageBox('Could not save file: %s' % err, 'Error - plotit',
-                parent=self, style=wx.OK|wx.ICON_ERROR)
+            wx.MessageBox('Could not save file: %s' % err,
+                          'Error - plotit',
+                          parent=self,
+                          style=wx.OK | wx.ICON_ERROR)
 
     def OnMenuFilePageSetup(self, evt):
         """
@@ -1476,8 +1511,10 @@ class PlotFrame(wx.Frame):
         """
         Handles Help->About menu events.
         """
-        wx.MessageBox(self.ABOUT_MESSAGE, self.ABOUT_TITLE, parent=self,
-            style=wx.OK)
+        wx.MessageBox(self.ABOUT_MESSAGE,
+                      self.ABOUT_TITLE,
+                      parent=self,
+                      style=wx.OK)
 
     def get_figure(self):
         """
@@ -1539,6 +1576,7 @@ class PlotFrame(wx.Frame):
 # wxApp providing a matplotlib canvas in a top-level wxPython window
 #
 
+
 class PlotApp(wx.App):
     """
     A wxApp that provides a matplotlib canvas embedded in a wxPython top-level
@@ -1551,8 +1589,16 @@ class PlotApp(wx.App):
     ABOUT_TITLE = None
     ABOUT_MESSAGE = None
 
-    def __init__(self, title="WxMpl", size=(6.0, 3.7), dpi=96, cursor=True,
-     location=True, crosshairs=True, selection=True, zoom=True, **kwds):
+    def __init__(self,
+                 title="WxMpl",
+                 size=(6.0, 3.7),
+                 dpi=96,
+                 cursor=True,
+                 location=True,
+                 crosshairs=True,
+                 selection=True,
+                 zoom=True,
+                 **kwds):
         """
         Creates a new PlotApp, which creates a PlotFrame top-level window.
 
@@ -1577,8 +1623,9 @@ class PlotApp(wx.App):
 
     def OnInit(self):
         self.frame = panel = PlotFrame(None, -1, self.title, self.size,
-            self.dpi, self.cursor, self.location, self.crosshairs,
-            self.selection, self.zoom)
+                                       self.dpi, self.cursor, self.location,
+                                       self.crosshairs, self.selection,
+                                       self.zoom)
 
         if self.ABOUT_TITLE is not None:
             panel.ABOUT_TITLE = self.ABOUT_TITLE
@@ -1642,13 +1689,14 @@ class PlotApp(wx.App):
 # Automatically resizing vectors and matrices
 #
 
+
 class VectorBuffer:
     """
     Manages a Numerical Python vector, automatically growing it as necessary to
     accomodate new entries.
     """
     def __init__(self):
-        self.data = np.zeros((16,), np.Float)
+        self.data = np.zeros((16, ), np.Float)
         self.nextRow = 0
 
     def clear(self):
@@ -1662,7 +1710,7 @@ class VectorBuffer:
         """
         Zero and reset this buffer, releasing the underlying array.
         """
-        self.data = np.zeros((16,), np.Float)
+        self.data = np.zeros((16, ), np.Float)
         self.nextRow = 0
 
     def append(self, point):
@@ -1674,11 +1722,11 @@ class VectorBuffer:
 
         resize = False
         if nextRow == data.shape[0]:
-            nR = int(np.ceil(self.data.shape[0]*1.5))
+            nR = int(np.ceil(self.data.shape[0] * 1.5))
             resize = True
 
         if resize:
-            self.data = np.zeros((nR,), np.Float)
+            self.data = np.zeros((nR, ), np.Float)
             self.data[0:data.shape[0]] = data
 
         self.data[nextRow] = point
@@ -1732,7 +1780,7 @@ class MatrixBuffer:
         resize = True
         if nextRow == data.shape[0]:
             nC = data.shape[1]
-            nR = int(np.ceil(self.data.shape[0]*1.5))
+            nR = int(np.ceil(self.data.shape[0] * 1.5))
             if nC < nPts:
                 nC = nPts
         elif data.shape[1] < nPts:
@@ -1762,6 +1810,7 @@ class MatrixBuffer:
 #
 # Utility functions used by the StripCharter
 #
+
 
 def make_delta_bbox(X1, Y1, X2, Y2):
     """
@@ -1810,6 +1859,7 @@ def make_bbox(X, Y):
 #
 # Strip-charts lines using a matplotlib axes
 #
+
 
 class StripCharter:
     """
@@ -1869,10 +1919,12 @@ class StripCharter:
             self._plot_channel(channel, styleGen)
 
         if self.channels:
-            lines  = [self.lines[x] for x in self.channels]
+            lines = [self.lines[x] for x in self.channels]
             labels = [x.get_label() for x in lines]
-            self.axes.legend(lines, labels, numpoints=2,
-                prop=FontProperties(size='x-small'))
+            self.axes.legend(lines,
+                             labels,
+                             numpoints=2,
+                             prop=FontProperties(size='x-small'))
 
     def _plot_channel(self, channel, styleGen):
         """
@@ -1931,12 +1983,12 @@ class StripCharter:
             line._wxmpl_empty_line = False
         else:
             if line.get_transform() != axes.transData:
-                xys = axes._get_verts_in_data_coords(
-                    line.get_transform(), zip(x, y))
+                xys = axes._get_verts_in_data_coords(line.get_transform(),
+                                                     zip(x, y))
             else:
                 xys = np.zeros((x.shape[0], 2), np.Float)
-                xys[:,0] = x
-                xys[:,1] = y
+                xys[:, 0] = x
+                xys[:, 1] = y
             axes.update_datalim(xys)
 
         if zoomed:
@@ -1949,6 +2001,7 @@ class StripCharter:
 #
 # Data-providing interface to the StripCharter
 #
+
 
 class Channel:
     """
@@ -2023,4 +2076,3 @@ class Channel:
         there is no data available.
         """
         return None
-
