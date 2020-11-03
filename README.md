@@ -19,18 +19,22 @@ Downloads are available through Google Drive:<br>
 <br>
 Version 0.4.2: [Windows](https://bit.ly/dicompylerwindows) | [Mac 10.5 - 10.13](https://bit.ly/dicompylermac) | [Source](https://pypi.python.org/packages/source/d/dicompyler/dicompyler-0.4.2.tar.gz#md5=adbfa47b07f983f17fdba26a1442fce0) | [Test Data](https://bit.ly/dicompylertestdata) - Released July 15th, 2014 - [Release Notes](https://github.com/bastula/dicompyler/wiki/ReleaseNotes)
 
+Running from source:
+--------------------
+
 The Mac prebuilt binaries are unable to run on macOS 10.15 (Catalina), however,
 the source builds run well. This fork provides a dedicated Anaconda environment
-for running dicompyler from source:
+for running dicompyler from source on **all** platforms:
 
 1. `cd` into anaconda
 2. run `conda env create -f dicompyler.yml`
 3. `cd ..` to change back to the dicompyler main directory.
+4. `conda activate dicompyler`
+5. Run from source
 
-Now run `./dicompyler_app_mac.py`
+   a. macOS:  `./dicompyler_app_mac.py`
 
-This Anaconda environment should work for Linux and Windows as well, just run
-`./dicompyler_app.py` instead.
+   b. Linux/Windows: `./dicompyler_app.py`
 
 Discussions:
 
